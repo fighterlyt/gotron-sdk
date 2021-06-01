@@ -16,14 +16,12 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rjeczalik/notify v0.9.2
 	github.com/shengdoushi/base58 v1.0.0
-	github.com/spf13/cobra v1.0.0
-	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.5.1
-	github.com/tyler-smith/go-bip39 v1.0.2
-	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	github.com/spf13/cobra v1.1.3
+	github.com/tyler-smith/go-bip39 v1.1.0
+	go.uber.org/zap v1.17.0
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	google.golang.org/genproto v0.0.0-20200825200019-8632dd797987
-	google.golang.org/grpc v1.37.0
+	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )

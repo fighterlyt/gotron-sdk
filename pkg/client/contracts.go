@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/fbsobreira/gotron-sdk/pkg/abi"
-	"github.com/fbsobreira/gotron-sdk/pkg/address"
-	"github.com/fbsobreira/gotron-sdk/pkg/common"
-	"github.com/fbsobreira/gotron-sdk/pkg/proto/api"
-	"github.com/fbsobreira/gotron-sdk/pkg/proto/core"
+	"github.com/fighterlyt/gotron-sdk/pkg/abi"
+	"github.com/fighterlyt/gotron-sdk/pkg/address"
+	"github.com/fighterlyt/gotron-sdk/pkg/common"
+	"github.com/fighterlyt/gotron-sdk/pkg/proto/api"
+	"github.com/fighterlyt/gotron-sdk/pkg/proto/core"
 	"google.golang.org/protobuf/proto"
 )
 

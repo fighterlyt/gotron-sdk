@@ -9,10 +9,9 @@ import (
 	"github.com/fighterlyt/gotron-sdk/pkg/client"
 	"github.com/fighterlyt/gotron-sdk/pkg/common"
 	"github.com/fighterlyt/gotron-sdk/pkg/keystore"
-	"github.com/fighterlyt/gotron-sdk/pkg/ledger"
 	"github.com/fighterlyt/gotron-sdk/pkg/proto/api"
 	"github.com/fighterlyt/gotron-sdk/pkg/proto/core"
-	proto "github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -83,32 +82,6 @@ func (C *Controller) signTxForSending() {
 	C.tx = signedTransaction
 }
 
-func (C *Controller) hardwareSignTxForSending() {
-	if C.executionError != nil {
-		return
-	}
-	data, _ := C.GetRawData()
-	signature, err := ledger.SignTx(data)
-	if err != nil {
-		C.executionError = err
-		return
-	}
-
-	/* TODO: validate signature
-	if strings.Compare(signerAddr, address.ToBech32(C.sender.account.Address)) != 0 {
-		C.executionError = ErrBadTransactionParam
-		errorMsg := "signature verification failed : sender address doesn't match with ledger hardware address"
-		C.transactionErrors = append(C.transactionErrors, &Error{
-			ErrMessage:           &errorMsg,
-			TimestampOfRejection: time.Now().Unix(),
-		})
-		return
-	}
-	*/
-	// add signature
-	C.tx.Signature = append(C.tx.Signature, signature)
-}
-
 // TransactionHash extract hash from TX
 func (C *Controller) TransactionHash() (string, error) {
 	rawData, err := C.GetRawData()
@@ -170,8 +143,6 @@ func (C *Controller) ExecuteTransaction() error {
 	switch C.Behavior.SigningImpl {
 	case Software:
 		C.signTxForSending()
-	case Ledger:
-		C.hardwareSignTxForSending()
 	}
 	C.sendSignedTx()
 	C.txConfirmation()

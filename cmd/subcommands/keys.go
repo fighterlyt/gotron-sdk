@@ -9,7 +9,6 @@ import (
 	"github.com/fighterlyt/gotron-sdk/pkg/account"
 	c "github.com/fighterlyt/gotron-sdk/pkg/common"
 
-	"github.com/fighterlyt/gotron-sdk/pkg/ledger"
 	"github.com/fighterlyt/gotron-sdk/pkg/mnemonic"
 	"github.com/fighterlyt/gotron-sdk/pkg/store"
 	"github.com/spf13/cobra"
@@ -38,10 +37,7 @@ func keysSub() []*cobra.Command {
 		Use:   "list",
 		Short: "List all the local accounts",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if useLedgerWallet {
-				ledger.ProcessAddressCommand()
-				return nil
-			}
+
 			store.DescribeLocalAccounts()
 			return nil
 		},

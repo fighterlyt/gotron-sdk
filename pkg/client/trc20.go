@@ -20,6 +20,9 @@ const (
 	trc20SymbolSignature         = "0x95d89b41"
 	trc20DecimalsSignature       = "0x313ce567"
 	trc20BalanceOf               = "0x70a08231"
+	trc20TransferFrom            = `0x23b872dd`
+	trc20Approve                 = `0x095ea7b3`
+	trc20allowance               = `0xdd62ed3e`
 )
 
 // TRC20Call make cosntant calll
@@ -161,6 +164,65 @@ func (g *GrpcClient) TRC20ContractBalance(addr, contractAddress string) (*big.In
 	return r, nil
 }
 
+/*TRC20Allow    查询授权金额
+参数:
+*	owner          	string  	所有者
+*	spender        	string  	被授权者
+*	contractAddress	string  	合约地址
+返回值:
+*	*big.Int       	*big.Int	返回值1
+*	error          	error   	返回值2
+*/
+func (g *GrpcClient) TRC20Allow(owner, spender, contractAddress string) (*big.Int, error) {
+	addrB, err := address.Base58ToAddress(owner)
+	if err != nil {
+		return nil, fmt.Errorf("invalid address %s: %v", owner, owner)
+	}
+
+	addrA, err := address.Base58ToAddress(spender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid address %s: %v", owner, owner)
+	}
+
+	req := trc20allowance + "0000000000000000000000" + addrB.Hex()[2:] + "0000000000000000000000" + addrA.Hex()[2:]
+	result, err := g.TRC20Call("", contractAddress, req, true, 0)
+	if err != nil {
+		return nil, err
+	}
+	data := common.ToHex(result.GetConstantResult()[0])
+	r, err := g.ParseTRC20NumericProperty(data)
+	if err != nil {
+		return nil, fmt.Errorf("contract address %s: %v", contractAddress, err)
+	}
+	if r == nil {
+		return nil, fmt.Errorf("contract address %s: invalid allow balance of %s", contractAddress, owner)
+	}
+	return r, nil
+}
+
+/*TRC20Approve 合约授权，允许接收方支配发起方金额
+参数:
+*	from                     	string                      发起方
+*	to                  	    string                   	接收方
+*	contractAddress          	string                   	合约
+*	amount                   	*big.Int                 	金额
+*	feeLimit                 	int64                       手续费
+返回值:
+*	*api.TransactionExtention	*api.TransactionExtention	返回值1
+*	error                    	error                    	返回值2
+*/
+func (g *GrpcClient) TRC20Approve(from, to, contractAddress string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
+	addrB, err := address.Base58ToAddress(to)
+	if err != nil {
+		return nil, err
+	}
+	ab := common.LeftPadBytes(amount.Bytes(), 32)
+	req := trc20Approve + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrB.Hex())-2:] + addrB.Hex()[2:]
+	req += common.Bytes2Hex(ab)
+
+	return g.TRC20Call(from, contractAddress, req, false, feeLimit)
+}
+
 // TRC20Send send toke to address
 func (g *GrpcClient) TRC20Send(from, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
 	addrB, err := address.Base58ToAddress(to)
@@ -170,5 +232,34 @@ func (g *GrpcClient) TRC20Send(from, to, contract string, amount *big.Int, feeLi
 	ab := common.LeftPadBytes(amount.Bytes(), 32)
 	req := trc20TransferMethodSignature + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrB.Hex())-4:] + addrB.Hex()[4:]
 	req += common.Bytes2Hex(ab)
+	return g.TRC20Call(from, contract, req, false, feeLimit)
+}
+
+/*TRC20SendFrom 方法说明
+参数:
+*	from                     	string                   	发起方
+*	spender                  	string                   	真实支付方
+*	to                       	string                   	收款方
+*	contract                 	string                   	合约
+*	amount                   	*big.Int                    金额
+*	feeLimit                 	int64                    	手续费
+返回值:
+*	*api.TransactionExtention	*api.TransactionExtention	返回值1
+*	error                    	error                    	返回值2
+*/
+func (g *GrpcClient) TRC20SendFrom(from, spender, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
+	addrB, err := address.Base58ToAddress(to)
+	if err != nil {
+		return nil, err
+	}
+
+	addrA, err := address.Base58ToAddress(spender)
+	if err != nil {
+		return nil, err
+	}
+	ab := common.LeftPadBytes(amount.Bytes(), 32)
+	req := trc20TransferFrom + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrA.Hex())-2:] + addrA.Hex()[2:] + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrB.Hex())-2:] + addrB.Hex()[2:]
+	req += common.Bytes2Hex(ab)
+	println(req)
 	return g.TRC20Call(from, contract, req, false, feeLimit)
 }

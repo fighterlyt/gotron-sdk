@@ -14,6 +14,10 @@ import (
 )
 
 const (
+	fill = `0000000000000000000000000000000000000000000000000000000000000000`
+)
+
+const (
 	trc20TransferMethodSignature = "0xa9059cbb"
 	trc20TransferEventSignature  = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 	trc20NameSignature           = "0x06fdde03"
@@ -26,7 +30,7 @@ const (
 )
 
 // TRC20Call make cosntant calll
-func (g *GrpcClient) TRC20Call(from, contractAddress, data string, constant bool, feeLimit int64) (*api.TransactionExtention, error) {
+func (g *GrpcClient) TRC20Call(from, contractAddress, data string, constant bool, feeLimit int64) (*api.TransactionExtention, error) { //nolint:lll
 	var err error
 	fromDesc := address.HexToAddress("410000000000000000000000000000000000000000")
 	if len(from) > 0 {
@@ -153,6 +157,7 @@ func (g *GrpcClient) TRC20ContractBalance(addr, contractAddress string) (*big.In
 	if err != nil {
 		return nil, err
 	}
+
 	data := common.ToHex(result.GetConstantResult()[0])
 	r, err := g.ParseTRC20NumericProperty(data)
 	if err != nil {
@@ -211,7 +216,7 @@ func (g *GrpcClient) TRC20Allow(owner, spender, contractAddress string) (*big.In
 *	*api.TransactionExtention	*api.TransactionExtention	返回值1
 *	error                    	error                    	返回值2
 */
-func (g *GrpcClient) TRC20Approve(from, to, contractAddress string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
+func (g *GrpcClient) TRC20Approve(from, to, contractAddress string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) { //nolint:lll
 	addrB, err := address.Base58ToAddress(to)
 	if err != nil {
 		return nil, err
@@ -224,14 +229,27 @@ func (g *GrpcClient) TRC20Approve(from, to, contractAddress string, amount *big.
 }
 
 // TRC20Send send toke to address
-func (g *GrpcClient) TRC20Send(from, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
+func (g *GrpcClient) TRC20Send(from, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) { //nolint:lll
 	addrB, err := address.Base58ToAddress(to)
 	if err != nil {
 		return nil, err
 	}
+
 	ab := common.LeftPadBytes(amount.Bytes(), 32)
-	req := trc20TransferMethodSignature + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrB.Hex())-4:] + addrB.Hex()[4:]
+
+	req := trc20TransferMethodSignature + fill[len(addrB.Hex())-4:] + addrB.Hex()[4:]
 	req += common.Bytes2Hex(ab)
+
+	return g.TRC20Call(from, contract, req, false, feeLimit)
+}
+
+// TRC20Send send toke to address
+func (g *GrpcClient) TRC20Burn(from, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) { //nolint:lll
+	ab := common.LeftPadBytes(amount.Bytes(), 32)
+
+	req := trc20TransferMethodSignature + fill
+	req += common.Bytes2Hex(ab)
+
 	return g.TRC20Call(from, contract, req, false, feeLimit)
 }
 
@@ -247,7 +265,7 @@ func (g *GrpcClient) TRC20Send(from, to, contract string, amount *big.Int, feeLi
 *	*api.TransactionExtention	*api.TransactionExtention	返回值1
 *	error                    	error                    	返回值2
 */
-func (g *GrpcClient) TRC20SendFrom(from, spender, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) {
+func (g *GrpcClient) TRC20SendFrom(from, spender, to, contract string, amount *big.Int, feeLimit int64) (*api.TransactionExtention, error) { //nolint:lll
 	addrB, err := address.Base58ToAddress(to)
 	if err != nil {
 		return nil, err
@@ -257,9 +275,12 @@ func (g *GrpcClient) TRC20SendFrom(from, spender, to, contract string, amount *b
 	if err != nil {
 		return nil, err
 	}
+
 	ab := common.LeftPadBytes(amount.Bytes(), 32)
-	req := trc20TransferFrom + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrA.Hex())-2:] + addrA.Hex()[2:] + "0000000000000000000000000000000000000000000000000000000000000000"[len(addrB.Hex())-2:] + addrB.Hex()[2:]
+
+	req := trc20TransferFrom + fill[len(addrA.Hex())-2:] + addrA.Hex()[2:] + fill[len(addrB.Hex())-2:] + addrB.Hex()[2:]
+
 	req += common.Bytes2Hex(ab)
-	println(req)
+
 	return g.TRC20Call(from, contract, req, false, feeLimit)
 }

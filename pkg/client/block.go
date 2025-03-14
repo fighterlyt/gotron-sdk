@@ -6,13 +6,11 @@ import (
 	"github.com/fighterlyt/gotron-sdk/pkg/common"
 	"github.com/fighterlyt/gotron-sdk/pkg/proto/api"
 	"github.com/fighterlyt/gotron-sdk/pkg/proto/core"
+	"context"
 )
 
 // GetNowBlock return TIP block
-func (g *GrpcClient) GetNowBlock() (*api.BlockExtention, error) {
-	ctx, cancel := g.getContext()
-	defer cancel()
-
+func (g *GrpcClient) GetNowBlock(ctx context.Context) (*api.BlockExtention, error) {
 	result, err := g.Client.GetNowBlock2(ctx, new(api.EmptyMessage))
 
 	if err != nil {
